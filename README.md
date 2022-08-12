@@ -1,14 +1,13 @@
-# unnamed_weeb_music_database
+# unnamed_weeb_music_database/database
 
-Is a database for handling weeb related music metadata (albums, artists and related weeb content).
+GraphQL backend for mutating/querying data to/from the database.
 
-## For Visual Studio Code users
+## Prerequisites
 
-There's a workspace file: [.vscode/workspace](./.vscode/workspace.code-workspace).
+- PostgreSQL
+
+- `rustc` version 1.6 or higher.
 
 ## License
 
-```license
-                    GNU GENERAL PUBLIC LICENSE
-                       Version 3, 29 June 2007
-```
+Check [LICENSE.md](./LICENSE.md)
