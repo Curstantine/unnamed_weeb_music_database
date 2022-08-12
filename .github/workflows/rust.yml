@@ -20,4 +20,4 @@ jobs:
       uses: actions-rs/cargo@v1.0.1
       with:
         command: build
-        args: --manifest-path backend/Cargo.toml
+        args: --manifest-path Cargo.toml
