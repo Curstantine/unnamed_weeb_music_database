@@ -85,7 +85,7 @@ fn build_query(options: &Options) -> (String, Values) {
     q.columns([
         (ArtistIden::Table, ArtistIden::Id),
         (ArtistIden::Table, ArtistIden::Name),
-        (ArtistIden::Table, ArtistIden::AltNames)
+        (ArtistIden::Table, ArtistIden::AltNames),
     ]);
 
     if options.song_id.is_none() && options.release_id.is_none() {

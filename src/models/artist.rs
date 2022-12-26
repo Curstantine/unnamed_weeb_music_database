@@ -1,4 +1,4 @@
-use super::{Name, ExternalSite};
+use super::{ExternalSite, Name};
 use async_graphql::Object;
 use sea_query::Iden;
 use sqlx::{postgres::PgRow, FromRow, Row};

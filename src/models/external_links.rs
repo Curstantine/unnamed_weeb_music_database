@@ -1,14 +1,14 @@
-use std::error::Error;
 use async_graphql::{Enum, Object};
+use std::error::Error;
 
 #[derive(Enum, Copy, Clone, Debug, Eq, PartialEq, sqlx::Encode, sqlx::Decode)]
 pub enum ExternalSiteType {
     AppleMusic,
     YouTube,
     Spotify,
-	SoundCloud,
-	Twitter,
-	Instagram,
+    SoundCloud,
+    Twitter,
+    Instagram,
 }
 
 #[derive(Enum, Copy, Clone, Debug, Eq, PartialEq, sqlx::Encode, sqlx::Decode)]
@@ -36,59 +36,23 @@ impl ExternalSite {
         // based on the site type.
         match self.site {
             ExternalSiteType::AppleMusic => match self.external_type {
-                ExternalType::Album => format!(
-                    "https://music.apple.com/us/album/{}",
-                    self.id
-                ),
-                ExternalType::Song => format!(
-                    "https://music.apple.com/us/song/{}",
-                    self.id
-                ),
-                ExternalType::Artist => format!(
-                    "https://music.apple.com/us/artist/{}",
-                    self.id
-                ),
+                ExternalType::Album => format!("https://music.apple.com/us/album/{}", self.id),
+                ExternalType::Song => format!("https://music.apple.com/us/song/{}", self.id),
+                ExternalType::Artist => format!("https://music.apple.com/us/artist/{}", self.id),
             },
             ExternalSiteType::YouTube => match self.external_type {
-                ExternalType::Album => format!(
-                    "https://www.youtube.com/playlist?list={}",
-                    self.id
-                ),
-                ExternalType::Song => format!(
-                    "https://www.youtube.com/watch?v={}",
-                    self.id
-                ),
-                ExternalType::Artist => format!(
-                    "https://www.youtube.com/channel/{}",
-                    self.id
-                ),
+                ExternalType::Album => format!("https://www.youtube.com/playlist?list={}", self.id),
+                ExternalType::Song => format!("https://www.youtube.com/watch?v={}", self.id),
+                ExternalType::Artist => format!("https://www.youtube.com/channel/{}", self.id),
             },
             ExternalSiteType::Spotify => match self.external_type {
-                ExternalType::Album => format!(
-                    "https://open.spotify.com/album/{}",
-                    self.id
-                ),
-                ExternalType::Song => format!(
-                    "https://open.spotify.com/track/{}",
-                    self.id
-                ),
-                ExternalType::Artist => format!(
-                    "https://open.spotify.com/artist/{}",
-                    self.id
-                ),
+                ExternalType::Album => format!("https://open.spotify.com/album/{}", self.id),
+                ExternalType::Song => format!("https://open.spotify.com/track/{}", self.id),
+                ExternalType::Artist => format!("https://open.spotify.com/artist/{}", self.id),
             },
-			ExternalSiteType::SoundCloud => format!(
-					"https://soundcloud.com/{}",
-					self.id
-				),
-			ExternalSiteType::Twitter => format!(
-					"https://twitter.com/{}",
-					self.id
-				),
-			ExternalSiteType::Instagram => format!(
-					"https://instagram.com/{}",
-					self.id
-				),
+            ExternalSiteType::SoundCloud => format!("https://soundcloud.com/{}", self.id),
+            ExternalSiteType::Twitter => format!("https://twitter.com/{}", self.id),
+            ExternalSiteType::Instagram => format!("https://instagram.com/{}", self.id),
         }
     }
 }
