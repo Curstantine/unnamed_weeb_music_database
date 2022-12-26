@@ -23,7 +23,7 @@ impl Page {
         genres: Option<Vec<String>>,
     ) -> Result<Vec<Song>, Error> {
         // Ok(Song)
-        let db = &*context.data_unchecked::<PgPool>();
+        let db = context.data_unchecked::<PgPool>();
         let mut options = crate::models::song::Options {
             id: None,
             search: None,
@@ -69,7 +69,7 @@ impl Page {
         release_id: Option<String>,
     ) -> Result<Vec<Artist>, Error> {
         // Ok(Artist)
-        let db = &*context.data_unchecked::<PgPool>();
+        let db = context.data_unchecked::<PgPool>();
         let mut options = crate::models::artist::Options {
             id: None,
             search: None,

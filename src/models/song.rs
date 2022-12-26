@@ -43,14 +43,14 @@ impl Song {
     }
 
     async fn artists<'ctx>(&self, context: &Context<'ctx>) -> Vec<Artist> {
-        let db = &*context.data_unchecked::<PgPool>();
+        let db = context.data_unchecked::<PgPool>();
         crate::database::artist::get_artists_by_song_id(&self.id, db)
             .await
             .unwrap()
     }
 
     async fn releases<'ctx>(&self, context: &Context<'ctx>) -> Vec<Release> {
-        let db = &*context.data_unchecked::<PgPool>();
+        let db = context.data_unchecked::<PgPool>();
         crate::database::release::get_releases_by_song_id(&self.id, db)
             .await
             .unwrap()

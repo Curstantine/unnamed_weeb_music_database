@@ -1,4 +1,4 @@
-use super::Name;
+use super::{Name, ExternalSite};
 use async_graphql::Object;
 use sea_query::Iden;
 use sqlx::{postgres::PgRow, FromRow, Row};
@@ -16,19 +16,27 @@ use ulid::Ulid;
 pub struct Artist {
     pub id: Ulid,
     pub name: Name,
-    ///// Contains an array of external links (YouTube, Apple Music and etc)
-    //pub external_sites: Option<Vec<ExternalSites>>,
-    // artist_type: ArtistType, <- TODO: Find a better way to handle artist types without trying to duplicate the source.
+    pub alt_names: Option<Vec<Name>>,
+    /// Contains an array of external links (YouTube, Apple Music and etc)
+    pub external_sites: Option<Vec<ExternalSite>>,
+    pub description: Option<String>,
+    // artist_type: ArtistType,
 }
 
 impl<'r> FromRow<'r, PgRow> for Artist {
     fn from_row(row: &'r PgRow) -> Result<Self, sqlx::Error> {
         let id: String = row.try_get(0)?;
         let name: Name = row.try_get(1)?;
+        let alt_names: Option<Vec<Name>> = row.try_get(2)?;
+        let external_sites: Option<Vec<ExternalSite>> = row.try_get(3)?;
+        let description: Option<String> = row.try_get(4)?;
 
         Ok(Self {
             id: Ulid::from_string(&id).unwrap(),
             name,
+            alt_names,
+            external_sites,
+            description,
         })
     }
 }
@@ -37,6 +45,9 @@ pub enum ArtistIden {
     Table,
     Id,
     Name,
+    AltNames,
+    ExternalSites,
+    Description,
 }
 
 impl Iden for ArtistIden {
@@ -48,6 +59,9 @@ impl Iden for ArtistIden {
                 ArtistIden::Table => "artists",
                 ArtistIden::Id => "id",
                 ArtistIden::Name => "name",
+                ArtistIden::AltNames => "alt_names",
+                ArtistIden::ExternalSites => "external_sites",
+                ArtistIden::Description => "description",
             }
         )
         .unwrap();
@@ -83,6 +97,18 @@ impl Artist {
 
     async fn name(&self) -> &Name {
         &self.name
+    }
+
+    async fn alt_names(&self) -> Option<&Vec<Name>> {
+        self.alt_names.as_ref()
+    }
+
+    async fn external_sites(&self) -> Option<&Vec<ExternalSite>> {
+        self.external_sites.as_ref()
+    }
+
+    async fn description(&self) -> Option<&String> {
+        self.description.as_ref()
     }
 }
 

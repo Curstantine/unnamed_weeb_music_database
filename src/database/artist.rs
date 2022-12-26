@@ -18,6 +18,9 @@ pub async fn get_artists_by_song_id(id: &Ulid, db: &PgPool) -> Result<Vec<Artist
         .columns([
             (ArtistIden::Table, ArtistIden::Id),
             (ArtistIden::Table, ArtistIden::Name),
+            (ArtistIden::Table, ArtistIden::AltNames),
+            (ArtistIden::Table, ArtistIden::ExternalSites),
+            (ArtistIden::Table, ArtistIden::Description),
         ])
         .from(SongArtistIden::Table)
         .join(
@@ -82,6 +85,7 @@ fn build_query(options: &Options) -> (String, Values) {
     q.columns([
         (ArtistIden::Table, ArtistIden::Id),
         (ArtistIden::Table, ArtistIden::Name),
+        (ArtistIden::Table, ArtistIden::AltNames)
     ]);
 
     if options.song_id.is_none() && options.release_id.is_none() {

@@ -16,7 +16,7 @@ pub async fn up(conf: super::config::Config) -> (ServerStart, SocketAddr) {
 
     let pool = PgPoolOptions::new()
         .max_connections(conf.db.max_connections)
-        .connect_timeout(conf.db.connect_timeout)
+        .acquire_timeout(conf.db.connect_timeout)
         .connect(&conf.db.url)
         .await
         .unwrap();
