@@ -46,7 +46,7 @@ impl QueryRoot {
         genres: Option<Vec<String>>,
     ) -> Result<Song, Error> {
         // Ok(Song)
-        let db = &*context.data_unchecked::<PgPool>();
+        let db = context.data_unchecked::<PgPool>();
         let mut options = crate::models::song::Options {
             id: None,
             search: None,
@@ -89,7 +89,7 @@ impl QueryRoot {
         release_id: Option<String>,
     ) -> Result<Artist, Error> {
         // Ok(Artist)
-        let db = &*context.data_unchecked::<PgPool>();
+        let db = context.data_unchecked::<PgPool>();
         let mut options = crate::models::artist::Options {
             id: None,
             search: None,
@@ -150,7 +150,7 @@ pub struct MutationRoot;
 impl MutationRoot {
     async fn create_song<'a>(&self, context: &Context<'a>, input: NewSong) -> Result<Song, Error> {
         // Ok(Song)
-        let db = &*context.data_unchecked::<PgPool>();
+        let db = context.data_unchecked::<PgPool>();
         let ulid = ulid::Ulid::new();
         let name = Name {
             native: input.name.native,

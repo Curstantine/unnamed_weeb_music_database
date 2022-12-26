@@ -16,7 +16,7 @@ routerify = "3.0.0"
 routerify-json-response = "3.0.0"
 
 # toml parsing for configuration.
-confy = "0.4.0"
+confy = "0.5.1"
 
 # async utils
 tokio = { version = "1", features = ["full"] }
@@ -28,13 +28,13 @@ tracing-subscriber = "0.3.11"
 
 # GraphQl
 # juniper = "0.15.9"
-async-graphql = "4.0.6"
+async-graphql = "5.0.4"
 
 # SQLx (postgres)
-sqlx = { version = "0.5", features = [ "runtime-tokio-native-tls" , "postgres", "offline" ] }
+sqlx = { version = "0.6.2", features = [ "runtime-tokio-native-tls" , "postgres", "offline" ] }
 
 # SeaQuery (sqlx) for dynamic queries
 sea-query = { version = "^0", features = ["derive", "attr", "thread-safe", "sqlx-postgres", "postgres-array"] }
 
 # Ulid for generating unique ids
-ulid = { version = "0.5.0", features = ["std"] }
+ulid = { version = "1.0.0", features = ["std"] }

@@ -2,9 +2,14 @@ pub mod artist;
 pub mod release;
 pub mod song;
 
+pub mod external_links;
+
+// Re-exporting the external links module.
+pub use crate::models::external_links::*;
+
 use std::error::Error;
 
-use async_graphql::{Enum, InputObject, Object};
+use async_graphql::{InputObject, Object};
 
 #[derive(Clone, Debug, InputObject)]
 pub struct NewName {
@@ -44,30 +49,9 @@ impl Name {
     }
 }
 
-#[derive(Enum, Copy, Clone, Debug, Eq, PartialEq)]
-pub enum ExternalSite {
-    AppleMusic,
-    YouTube,
-    Spotify,
-}
-
-#[derive(Clone, Debug)]
-pub struct ExternalSites {
-    site_type: ExternalSite,
-    url: String,
-}
-
-#[Object]
-impl ExternalSites {
-    pub async fn site_type(&self) -> ExternalSite {
-        self.site_type
-    }
-
-    pub async fn url(&self) -> String {
-        self.url.clone()
-    }
-}
-
+// Implementing Decode for Name
+//
+// This is required for Name to be decoded properly.
 impl<'r> sqlx::decode::Decode<'r, sqlx::Postgres> for Name {
     fn decode(
         value: sqlx::postgres::PgValueRef<'r>,
@@ -84,8 +68,20 @@ impl<'r> sqlx::decode::Decode<'r, sqlx::Postgres> for Name {
     }
 }
 
+// Implementing Type for Name
+//
+// This is required for Name to be decoded properly.
 impl sqlx::Type<sqlx::Postgres> for Name {
     fn type_info() -> sqlx::postgres::PgTypeInfo {
         sqlx::postgres::PgTypeInfo::with_name("localized_name")
+    }
+}
+
+// Implementing PgHasArrayType for Name
+//
+// This is required for arrays of Name to be decoded properly.
+impl sqlx::postgres::PgHasArrayType for Name {
+    fn array_type_info() -> sqlx::postgres::PgTypeInfo {
+        sqlx::postgres::PgTypeInfo::with_name("_localized_name")
     }
 }
