@@ -25,11 +25,11 @@ pub struct Artist {
 
 impl<'r> FromRow<'r, PgRow> for Artist {
     fn from_row(row: &'r PgRow) -> Result<Self, sqlx::Error> {
-        let id: String = row.try_get(0)?;
-        let name: Name = row.try_get(1)?;
-        let alt_names: Option<Vec<Name>> = row.try_get(2)?;
-        let external_sites: Option<Vec<ExternalSite>> = row.try_get(3)?;
-        let description: Option<String> = row.try_get(4)?;
+        let id: String = row.try_get("id")?;
+        let name: Name = row.try_get("name")?;
+        let alt_names: Option<Vec<Name>> = row.try_get("alt_names")?;
+        let external_sites: Option<Vec<ExternalSite>> = row.try_get("external_sites")?;
+        let description: Option<String> = row.try_get("description")?;
 
         Ok(Self {
             id: Ulid::from_string(&id).unwrap(),

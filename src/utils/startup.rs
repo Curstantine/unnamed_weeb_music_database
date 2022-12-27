@@ -21,6 +21,9 @@ pub async fn up(conf: super::config::Config) -> (ServerStart, SocketAddr) {
         .await
         .unwrap();
 
+    // Run migrations
+    sqlx::migrate!("./migrations").run(&pool).await.unwrap();
+
     //let ctx = crate::utils::context::Context::new(pool);
 
     let schema = Arc::new(crate::controllers::graphql::make_schema());
