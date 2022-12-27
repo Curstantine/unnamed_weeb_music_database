@@ -24,10 +24,10 @@ pub struct Release {
 
 impl<'r> FromRow<'r, PgRow> for Release {
     fn from_row(row: &'r PgRow) -> Result<Self, sqlx::Error> {
-        let id: String = row.try_get(0)?;
-        let name: Name = row.try_get(1)?;
-        let release_type: ReleaseType = row.try_get(2)?;
-        let total_tracks: i32 = row.try_get(3)?;
+        let id: String = row.try_get("id")?;
+        let name: Name = row.try_get("name")?;
+        let release_type: ReleaseType = row.try_get("release_type")?;
+        let total_tracks: i32 = row.try_get("total_tracks")?;
 
         Ok(Self {
             id: Ulid::from_string(&id).unwrap(),

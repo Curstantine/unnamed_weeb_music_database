@@ -86,6 +86,8 @@ fn build_query(options: &Options) -> (String, Values) {
         (ArtistIden::Table, ArtistIden::Id),
         (ArtistIden::Table, ArtistIden::Name),
         (ArtistIden::Table, ArtistIden::AltNames),
+        (ArtistIden::Table, ArtistIden::ExternalSites),
+        (ArtistIden::Table, ArtistIden::Description),
     ]);
 
     if options.song_id.is_none() && options.release_id.is_none() {

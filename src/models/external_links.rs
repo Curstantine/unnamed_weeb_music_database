@@ -90,7 +90,7 @@ impl sqlx::Type<sqlx::Postgres> for ExternalSite {
 // This is required for ExternalSiteType to be decoded properly.
 impl sqlx::Type<sqlx::Postgres> for ExternalSiteType {
     fn type_info() -> sqlx::postgres::PgTypeInfo {
-        sqlx::postgres::PgTypeInfo::with_name("ext_site_type")
+        sqlx::postgres::PgTypeInfo::with_name("external_site_type")
     }
 }
 
