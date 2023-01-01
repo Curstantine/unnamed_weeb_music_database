@@ -99,6 +99,48 @@ impl Page {
             .await
             .unwrap())
     }
+
+    /// Get Releases
+    async fn releases<'ctx>(
+        &self,
+        context: &Context<'ctx>,
+        id: Option<String>,
+        search: Option<String>,
+        song_id: Option<String>,
+        artist_id: Option<String>,
+    ) -> Result<Vec<crate::models::release::Release>, Error> {
+        // Ok(Release)
+        let db = context.data_unchecked::<PgPool>();
+        let mut options = crate::models::release::Options {
+            id: None,
+            search: None,
+            song_id: None,
+            artist_id: None,
+            page: self.page_info.current_page,
+            per_page: self.page_info.per_page,
+            genres: None,
+        };
+
+        if let Some(id) = id {
+            options.id = Some(id);
+        }
+
+        if let Some(search) = search {
+            options.search = Some(search);
+        }
+
+        if let Some(song_id) = song_id {
+            options.song_id = Some(song_id);
+        }
+
+        if let Some(artist_id) = artist_id {
+            options.artist_id = Some(artist_id);
+        }
+
+        Ok(crate::database::release::get_releases(&options, db)
+            .await
+            .unwrap())
+    }
 }
 
 #[derive(Clone, Debug)]
