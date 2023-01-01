@@ -2,7 +2,6 @@ use crate::{
     models::{
         artist::{Artist, ArtistIden, Options, SongArtistIden},
         release::SongReleaseIden,
-        song::SongIden,
     },
     utils::error::Error,
 };
@@ -21,6 +20,9 @@ pub async fn get_artists_by_song_id(id: &Ulid, db: &PgPool) -> Result<Vec<Artist
             (ArtistIden::Table, ArtistIden::AltNames),
             (ArtistIden::Table, ArtistIden::ExternalSites),
             (ArtistIden::Table, ArtistIden::Description),
+            (ArtistIden::Table, ArtistIden::BasedIn),
+            (ArtistIden::Table, ArtistIden::FoundedIn),
+            (ArtistIden::Table, ArtistIden::ArtistType),
         ])
         .from(SongArtistIden::Table)
         .join(
@@ -88,15 +90,12 @@ fn build_query(options: &Options) -> (String, Values) {
         (ArtistIden::Table, ArtistIden::AltNames),
         (ArtistIden::Table, ArtistIden::ExternalSites),
         (ArtistIden::Table, ArtistIden::Description),
+        (ArtistIden::Table, ArtistIden::BasedIn),
+        (ArtistIden::Table, ArtistIden::FoundedIn),
+        (ArtistIden::Table, ArtistIden::ArtistType),
     ]);
 
-    if options.song_id.is_none() && options.release_id.is_none() {
-        q.from(ArtistIden::Table);
-    } else if options.song_id.is_some() {
-        q.from(SongArtistIden::Table);
-    } else if options.release_id.is_some() {
-        q.from(SongReleaseIden::Table);
-    }
+    q.from(ArtistIden::Table);
 
     if let Some(id) = &options.id {
         q.and_where(Expr::col(ArtistIden::Id).eq(id.clone()));
@@ -109,9 +108,10 @@ fn build_query(options: &Options) -> (String, Values) {
     }
 
     if let Some(song_id) = &options.song_id {
+        q.expr(Expr::col((SongArtistIden::Table, SongArtistIden::JoinPhrase)));
         q.join(
             JoinType::LeftJoin,
-            SongIden::Table,
+            SongArtistIden::Table,
             Expr::tbl(SongArtistIden::Table, SongArtistIden::ArtistId)
                 .equals(ArtistIden::Table, ArtistIden::Id),
         )

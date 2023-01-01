@@ -33,6 +33,7 @@ pub async fn get_song(options: &Options, db: &PgPool) -> Result<Song, Error> {
     Ok(song)
 }
 
+
 /// Returns a song with the given id from the database.
 ///
 /// # Arguments
@@ -66,12 +67,7 @@ pub async fn create_song(
         .columns([SongIden::Id, SongIden::Name])
         .values_panic(vec![
             ulid.to_string().into(),
-            vec![
-                name.native.clone(),
-                name.romanized.clone(),
-                name.english.clone(),
-            ]
-            .into(),
+            name.clone().into(),
         ])
         .returning(Query::returning().columns([SongIden::Id, SongIden::Name]))
         .build(PostgresQueryBuilder);
@@ -92,10 +88,7 @@ pub async fn create_song(
 fn build_query(options: &Options) -> (String, Values) {
     let mut q = Query::select();
 
-    q.columns([
-        (SongIden::Table, SongIden::Id),
-        (SongIden::Table, SongIden::Name),
-    ]);
+    q.expr(Expr::table_asterisk(SongIden::Table));
 
     if options.artist_id.is_none() && options.release_id.is_none() {
         q.from(SongIden::Table);
