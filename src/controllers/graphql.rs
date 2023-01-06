@@ -1,10 +1,11 @@
 use crate::{
+    constants::AUTH_DEFAULT_ACCESS_LEVEL,
     controllers::page::{Page, PageInfo},
     database::user::LoginToken,
     models::{
         artist::Artist,
         song::{NewSong, Song},
-        user::{AccessLevel, User, Login, Register},
+        user::{Login, Register, User},
         Name,
     },
     utils::error::Error,
@@ -187,11 +188,15 @@ impl MutationRoot {
         let password = input.password;
         let username = input.username;
 
-        Ok(
-            crate::database::user::create_user(email, username, password, AccessLevel::User, db)
-                .await
-                .unwrap(),
+        Ok(crate::database::user::create_user(
+            email,
+            username,
+            password,
+            AUTH_DEFAULT_ACCESS_LEVEL,
+            db,
         )
+        .await
+        .unwrap())
     }
 }
 

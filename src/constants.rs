@@ -13,7 +13,8 @@ pub static ALLOWED_CONTROL_HOSTS: HeaderValue = HeaderValue::from_static("*");
 pub const JWT_DEFAULT_EXPIRATION: usize = 3600;
 
 // AUTH
-pub const AUTH_DEFAULT_ACCESS_LEVEL: &str = "user";
+pub const AUTH_DEFAULT_ACCESS_LEVEL: crate::models::user::AccessLevel =
+    crate::models::user::AccessLevel::User;
 pub const AUTH_DEFAULT_KEY: &str = "c2VjcmV0";
 pub const AUTH_DEFAULT_REFRESH_TOKEN_EXPIRATION: usize = 604800;
 
