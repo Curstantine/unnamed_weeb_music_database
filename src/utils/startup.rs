@@ -42,29 +42,20 @@ pub async fn up(conf: super::config::Config) -> (ServerStart, SocketAddr) {
     // If the admin user doesn't exist, create it
 
     if !admin_exists {
-        let admin_id = ulid::Ulid::new();
-        let admin_username = "admin";
-        let admin_password = "admin";
-        let admin_email = "admin@localhost";
+        let admin_username = "admin".to_string();
+        let admin_password = "admin".to_string();
+        let admin_email = "admin@localhost".to_string();
         let admin_access_level = AccessLevel::Admin;
 
-        let admin_password_hash = bcrypt::hash(admin_password, 12).unwrap();
-
-        sqlx::query(
-            r#"
-            INSERT INTO users (id, username, password_hash, email, access_level, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
-            "#,
-        ).bind(admin_id.to_string())
-            .bind(admin_username)
-            .bind(admin_password_hash)
-            .bind(admin_email)
-            .bind(admin_access_level)
-            .bind(chrono::Utc::now())
-            .bind(chrono::Utc::now())
-            .execute(&pool)
-            .await
-            .unwrap();
+        crate::database::user::create_user(
+            admin_email,
+            admin_username,
+            admin_password,
+            admin_access_level,
+            &pool,
+        )
+        .await
+        .unwrap();
     }
 
     let schema = Arc::new(crate::controllers::graphql::make_schema());
