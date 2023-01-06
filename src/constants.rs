@@ -19,6 +19,10 @@ pub const AUTH_DEFAULT_ACCESS_LEVEL: AccessLevel = AccessLevel::User;
 pub const AUTH_DEFAULT_KEY: &str = "c2VjcmV0";
 pub const AUTH_DEFAULT_REFRESH_TOKEN_EXPIRATION: usize = 604800;
 
+// Admin
+pub const ADMIN_DEFAULT_USERNAME: &str = "admin";
+pub const ADMIN_DEFAULT_PASSWORD: &str = "admin";
+
 // Database default values
 pub static DB_DEFAULT_CONNECT_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(5);
 pub static DB_DEFAULT_MAX_CONNECTIONS: u32 = 10;

@@ -42,15 +42,13 @@ pub async fn up(conf: super::config::Config) -> (ServerStart, SocketAddr) {
     // If the admin user doesn't exist, create it
 
     if !admin_exists {
-        let admin_username = "admin".to_string();
-        let admin_password = "admin".to_string();
         let admin_email = "admin@localhost".to_string();
         let admin_access_level = AccessLevel::Admin;
 
         crate::database::user::create_user(
             admin_email,
-            admin_username,
-            admin_password,
+            conf.default_admin_username.clone(),
+            conf.default_admin_password.clone(),
             admin_access_level,
             &pool,
         )

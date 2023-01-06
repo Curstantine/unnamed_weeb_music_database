@@ -27,6 +27,8 @@ pub struct Config {
     pub port: u16,
     pub db: Db,
     pub auth_key: String,
+    pub default_admin_password: String,
+    pub default_admin_username: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -54,6 +56,8 @@ impl Default for Config {
             port: constants::SERVER_DEFAULT_PORT,
             db: Db::default(),
             auth_key: constants::AUTH_DEFAULT_KEY.to_string(),
+            default_admin_password: constants::ADMIN_DEFAULT_PASSWORD.to_string(),
+            default_admin_username: constants::ADMIN_DEFAULT_USERNAME.to_string(),
         }
     }
 }
