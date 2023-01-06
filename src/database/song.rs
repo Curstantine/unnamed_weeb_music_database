@@ -33,7 +33,6 @@ pub async fn get_song(options: &Options, db: &PgPool) -> Result<Song, Error> {
     Ok(song)
 }
 
-
 /// Returns a song with the given id from the database.
 ///
 /// # Arguments
@@ -65,10 +64,7 @@ pub async fn create_song(
     let (query, values) = Query::insert()
         .into_table(SongIden::Table)
         .columns([SongIden::Id, SongIden::Name])
-        .values_panic(vec![
-            ulid.to_string().into(),
-            name.clone().into(),
-        ])
+        .values_panic(vec![ulid.to_string().into(), name.clone().into()])
         .returning(Query::returning().columns([SongIden::Id, SongIden::Name]))
         .build(PostgresQueryBuilder);
 

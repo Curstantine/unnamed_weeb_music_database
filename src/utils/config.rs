@@ -20,15 +20,16 @@ pub fn get_config() -> Config {
     config
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Config {
     pub name: String,
     pub ip: IpAddr,
     pub port: u16,
     pub db: Db,
+    pub auth_key: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Db {
     pub max_connections: u32,
     pub connect_timeout: std::time::Duration,
@@ -52,6 +53,7 @@ impl Default for Config {
             ip: constants::SERVER_DEFAULT_IP,
             port: constants::SERVER_DEFAULT_PORT,
             db: Db::default(),
+            auth_key: constants::AUTH_DEFAULT_KEY.to_string(),
         }
     }
 }

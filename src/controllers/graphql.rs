@@ -1,8 +1,10 @@
 use crate::{
     controllers::page::{Page, PageInfo},
+    database::user::LoginToken,
     models::{
         artist::Artist,
         song::{NewSong, Song},
+        user::{AccessLevel, User, Login, Register},
         Name,
     },
     utils::error::Error,
@@ -166,6 +168,30 @@ impl MutationRoot {
                 .unwrap(),
         )
         //todo!()
+    }
+
+    async fn login<'a>(&self, context: &Context<'a>, input: Login) -> Result<LoginToken, Error> {
+        let db = context.data_unchecked::<PgPool>();
+        let password = input.password;
+        let email = input.email;
+        let username = input.username;
+
+        Ok(crate::database::user::login(email, username, password, db)
+            .await
+            .unwrap())
+    }
+
+    async fn register<'a>(&self, context: &Context<'a>, input: Register) -> Result<User, Error> {
+        let db = context.data_unchecked::<PgPool>();
+        let email = input.email;
+        let password = input.password;
+        let username = input.username;
+
+        Ok(
+            crate::database::user::create_user(email, username, password, AccessLevel::User, db)
+                .await
+                .unwrap(),
+        )
     }
 }
 

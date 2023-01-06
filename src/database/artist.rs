@@ -108,7 +108,10 @@ fn build_query(options: &Options) -> (String, Values) {
     }
 
     if let Some(song_id) = &options.song_id {
-        q.expr(Expr::col((SongArtistIden::Table, SongArtistIden::JoinPhrase)));
+        q.expr(Expr::col((
+            SongArtistIden::Table,
+            SongArtistIden::JoinPhrase,
+        )));
         q.join(
             JoinType::LeftJoin,
             SongArtistIden::Table,

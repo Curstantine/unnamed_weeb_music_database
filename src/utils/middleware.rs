@@ -1,10 +1,12 @@
 use super::error::{Error, ErrorResponse};
-use crate::constants;
+use crate::{constants, models::user::AccessLevel};
 use hyper::{
     header::{self, HeaderValue},
     Body, Request, Response,
 };
+use jsonwebtoken::{decode, Validation};
 use routerify::{ext::RequestExt, RouteError};
+use serde::{Deserialize, Serialize};
 use std::io;
 use tracing::{error, info};
 
@@ -31,6 +33,49 @@ pub async fn logger(req: Request<Body>) -> Result<Request<Body>, io::Error> {
         req.method(),
         req.uri().path()
     );
+    Ok(req)
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Claims {
+    pub iss: String,
+    pub aud: String,
+    pub iat: usize,
+    pub nbf: usize,
+    pub exp: usize,
+    pub ulid: String,
+    pub access_level: AccessLevel,
+    pub sid: String,
+}
+
+// Implement an authentication middleware that checks for a valid JWT token in the Authorization header.
+// This uses routerify's middleware API.
+pub async fn auth(req: Request<Body>) -> Result<Request<Body>, io::Error> {
+    // Get the auth key from config and decode the token.
+    let config = req.data::<crate::config::Config>().unwrap();
+    let auth_key = jsonwebtoken::DecodingKey::from_base64_secret(&config.auth_key).unwrap();
+
+    let auth_head = req.headers().get("Authorization");
+    match auth_head {
+        Some(_) => {
+            let token = req
+                .headers()
+                .get("Authorization")
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .replace("Bearer ", "");
+
+            let validation = Validation::default();
+            let claims = decode::<Claims>(&token, &auth_key, &validation).unwrap();
+
+            req.set_context(claims.claims);
+        }
+        None => {
+            return Ok(req);
+        }
+    }
+
     Ok(req)
 }
 
