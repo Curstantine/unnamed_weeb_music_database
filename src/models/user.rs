@@ -196,10 +196,6 @@ impl User {
         &self.email
     }
 
-    async fn password_hash(&self) -> &str {
-        &self.password_hash
-    }
-
     async fn created_at(&self) -> &DateTime<Utc> {
         &self.created_at
     }

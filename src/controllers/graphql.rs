@@ -182,13 +182,13 @@ impl MutationRoot {
             .unwrap())
     }
 
-    async fn register<'a>(&self, context: &Context<'a>, input: Register) -> Result<User, Error> {
+    async fn register<'a>(&self, context: &Context<'a>, input: Register) -> Result<User, async_graphql::Error> {
         let db = context.data_unchecked::<PgPool>();
         let email = input.email;
         let password = input.password;
         let username = input.username;
 
-        Ok(crate::database::user::create_user(
+        match crate::database::user::create_user(
             email,
             username,
             password,
@@ -196,7 +196,10 @@ impl MutationRoot {
             db,
         )
         .await
-        .unwrap())
+        {
+            Ok(user) => Ok(user),
+            Err(err) => Err(async_graphql::Error::new(err.to_string())),
+        }
     }
 }
 

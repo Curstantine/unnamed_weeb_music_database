@@ -9,6 +9,7 @@ pub enum ExternalSiteType {
     SoundCloud,
     Twitter,
     Instagram,
+    MusicBrainz,
 }
 
 #[derive(Enum, Copy, Clone, Debug, Eq, PartialEq, sqlx::Encode, sqlx::Decode)]
@@ -53,6 +54,11 @@ impl ExternalSite {
             ExternalSiteType::SoundCloud => format!("https://soundcloud.com/{}", self.id),
             ExternalSiteType::Twitter => format!("https://twitter.com/{}", self.id),
             ExternalSiteType::Instagram => format!("https://instagram.com/{}", self.id),
+            ExternalSiteType::MusicBrainz => match self.external_type {
+                ExternalType::Album => format!("https://musicbrainz.org/release/{}", self.id),
+                ExternalType::Song => format!("https://musicbrainz.org/recording/{}", self.id),
+                ExternalType::Artist => format!("https://musicbrainz.org/artist/{}", self.id),
+            },
         }
     }
 }
