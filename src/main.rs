@@ -15,7 +15,7 @@ async fn main() {
     let conf = config::get_config();
     let (server, addr) = startup::up(conf).await;
 
-    info!("App is running on: {}", addr);
+    info!("App is running on: http://{}", addr);
 
     if let Err(err) = server.await {
         eprintln!("Server error: {err}");

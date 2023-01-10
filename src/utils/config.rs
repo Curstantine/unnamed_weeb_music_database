@@ -6,7 +6,7 @@ use std::{fs, net::IpAddr};
 pub fn get_config() -> Config {
     fn check(path: String) -> String {
         if let Err(error) = fs::read(&path) {
-            panic!("Failed to read the config file!! {error}");
+            panic!("Failed to read the config file!! {:?}", error.to_string());
         } else {
             path
         }
@@ -14,10 +14,14 @@ pub fn get_config() -> Config {
 
     let path = super::get_env(constants::ENV_CONFIG_PATH)
         .map(check)
-        .unwrap_or_default();
-    let config: Config = confy::load_path(path).unwrap_or_default();
+        .unwrap_or_else(|| constants::CONFIG_DEFAULT_PATH.to_string());
 
-    config
+    if let Ok(config) = confy::load_path::<Config>(path) {
+        config
+    } else {
+        println!("Failed to load config file, using the default values.");
+        Config::default()
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
