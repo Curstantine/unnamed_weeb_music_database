@@ -19,7 +19,7 @@ pub fn get_config() -> Config {
     if let Ok(config) = confy::load_path::<Config>(path) {
         config
     } else {
-        println!("Failed to load config file, using the default values.");
+        println!("Failed to load the config file, falling back to default values.");
         Config::default()
     }
 }
