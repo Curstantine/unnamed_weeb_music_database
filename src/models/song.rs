@@ -1,7 +1,7 @@
-use super::{artist::Artist, release::Release, Name, NewName, ExternalSite};
+use super::{artist::Artist, release::Release, ExternalSite, Name, NewName};
 use async_graphql::{Context, InputObject, Object};
 use sea_query::Iden;
-use sqlx::{postgres::PgRow, FromRow, PgPool, Row, types::chrono::NaiveDate};
+use sqlx::{postgres::PgRow, types::chrono::NaiveDate, FromRow, PgPool, Row};
 use ulid::Ulid;
 
 #[derive(Clone, Debug)]

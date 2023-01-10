@@ -1,7 +1,11 @@
 use super::{ExternalSite, Name};
 use async_graphql::Object;
 use sea_query::Iden;
-use sqlx::{postgres::PgRow, FromRow, Row, types::chrono::{DateTime, Utc}, Decode};
+use sqlx::{
+    postgres::PgRow,
+    types::chrono::{DateTime, Utc},
+    Decode, FromRow, Row,
+};
 use ulid::Ulid;
 
 #[derive(async_graphql::Enum, Clone, Debug, PartialEq, Eq, Copy, Decode)]
@@ -37,7 +41,7 @@ pub struct Artist {
     /// Contains the date when the artist was founded.
     pub founded_in: Option<DateTime<Utc>>,
     /// Contains the type of the artist.
-    /// 
+    ///
     /// This is used to determine how to display the artist.
     /// For example, a group of people will be displayed differently than a single person.
     pub artist_type: ArtistType,
@@ -108,7 +112,7 @@ pub enum SongArtistIden {
     Table,
     ArtistId,
     SongId,
-    JoinPhrase
+    JoinPhrase,
 }
 
 impl Iden for SongArtistIden {

@@ -1,9 +1,8 @@
-
-use super::{Name, ExternalSite};
+use super::{ExternalSite, Name};
 use async_graphql::{Enum, Object};
-use sqlx::{postgres::PgRow, FromRow, Row, Decode};
-use ulid::Ulid;
 use sqlx::types::chrono::NaiveDate;
+use sqlx::{postgres::PgRow, Decode, FromRow, Row};
+use ulid::Ulid;
 
 #[derive(Enum, Copy, Clone, Debug, Eq, PartialEq, Decode)]
 pub enum ReleaseType {
@@ -190,7 +189,6 @@ pub struct Options {
     pub page: Option<i32>,
     pub per_page: Option<i32>,
 }
-
 
 // Implement Type for ReleaseType
 //

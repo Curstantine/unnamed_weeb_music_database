@@ -31,7 +31,10 @@ async-graphql = { version = "5.0.4", features = ["chrono"] }
 sqlx = { version = "0.6.2", features = ["runtime-tokio-native-tls", "postgres", "offline", "all-types"] }
 
 # SeaQuery (sqlx) for dynamic queries
-sea-query = { version = "^0", features = ["derive", "attr", "thread-safe", "sqlx-postgres", "postgres-array"] }
+sea-query = { version = "^0", features = ["derive", "attr", "thread-safe", "sqlx-postgres", "postgres-array", "with-chrono"] }
 
 # Ulid for generating unique ids
 ulid = { version = "1.0.0", features = ["std"] }
+jsonwebtoken = "8.2.0"
+bcrypt = "0.13.0"
+chrono = "0.4.23"

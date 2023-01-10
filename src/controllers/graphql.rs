@@ -1,11 +1,14 @@
 use crate::{
+    constants::AUTH_DEFAULT_ACCESS_LEVEL,
     controllers::page::{Page, PageInfo},
+    database::user::LoginToken,
     models::{
         artist::Artist,
         song::{NewSong, Song},
-        Name,
+        user::{Login, Register, User},
+        Name, refresh_token::{RefreshTokenInput, RefreshedToken},
     },
-    utils::error::Error,
+    utils::{error::Error, middleware::Claims},
 };
 use async_graphql::{http::graphiql_source, Context, EmptySubscription, Object, Schema};
 use hyper::{Body, Request, Response};
@@ -24,7 +27,11 @@ pub async fn graphql(req: Request<Body>) -> Result<Response<Body>, io::Error> {
         .unwrap()
         .clone();
     let db = req.data::<PgPool>().unwrap().clone();
-    let request = deserialize_body(req.into_body()).await?;
+    let claims = req.context::<Claims>();
+    let mut request = deserialize_body(req.into_body()).await?;
+    if claims.is_some() {
+        request = request.data(claims.unwrap());
+    }
     let response = schema.execute(request.data(db)).await;
 
     Ok(Response::new(Body::from(
@@ -142,6 +149,32 @@ impl QueryRoot {
 
         Ok(Page { page_info })
     }
+
+    async fn user<'ctx>(
+        &self,
+        context: &Context<'ctx>,
+        id: Option<String>,
+        email: Option<String>,
+    ) -> Result<User, Error> {
+        // Ok(User)
+        let db = context.data_unchecked::<PgPool>();
+        let mut options = crate::models::user::Options {
+            id: None,
+            email: None,
+            page: None,
+            per_page: None,
+        };
+
+        if let Some(id) = id {
+            options.id = Some(id);
+        }
+
+        if let Some(email) = email {
+            options.email = Some(email);
+        }
+
+        Ok(crate::database::user::get_user(&options, db).await.unwrap())
+    }
 }
 
 pub struct MutationRoot;
@@ -166,6 +199,46 @@ impl MutationRoot {
                 .unwrap(),
         )
         //todo!()
+    }
+
+    async fn login<'a>(&self, context: &Context<'a>, input: Login) -> Result<LoginToken, Error> {
+        let db = context.data_unchecked::<PgPool>();
+        let password = input.password;
+        let email = input.email;
+        let username = input.username;
+
+        Ok(crate::database::user::login(email, username, password, db)
+            .await
+            .unwrap())
+    }
+
+    async fn register<'a>(&self, context: &Context<'a>, input: Register) -> Result<User, async_graphql::Error> {
+        let db = context.data_unchecked::<PgPool>();
+        let email = input.email;
+        let password = input.password;
+        let username = input.username;
+
+        match crate::database::user::create_user(
+            email,
+            username,
+            password,
+            AUTH_DEFAULT_ACCESS_LEVEL,
+            db,
+        )
+        .await
+        {
+            Ok(user) => Ok(user),
+            Err(err) => Err(async_graphql::Error::new(err.to_string())),
+        }
+    }
+
+    async fn refresh_token(&self, context: &Context<'_>, input: RefreshTokenInput) -> Result<RefreshedToken, Error> {
+        let db = context.data_unchecked::<PgPool>();
+        let refresh_token = input.token;
+
+        Ok(crate::database::user::refresh_token(refresh_token, db)
+            .await
+            .unwrap())
     }
 }
 
