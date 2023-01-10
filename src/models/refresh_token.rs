@@ -1,3 +1,4 @@
+use async_graphql::{InputObject, SimpleObject};
 use sqlx::{
     postgres::PgRow,
     types::chrono::{DateTime, Utc},
@@ -67,4 +68,14 @@ impl sea_query::Iden for RefreshTokenIden {
         )
         .unwrap();
     }
+}
+
+#[derive(Clone, Debug, SimpleObject)]
+pub struct RefreshedToken {
+    pub token: String,
+}
+
+#[derive(Clone, Debug, InputObject)]
+pub struct RefreshTokenInput {
+    pub token: String,
 }

@@ -1,4 +1,5 @@
-use async_graphql::Object;
+use async_graphql::{Object, Context};
+use hyper::StatusCode;
 use sea_query::Value;
 use serde::{ser::SerializeStruct, Deserialize, Serialize};
 use sqlx::{
@@ -7,6 +8,8 @@ use sqlx::{
     Decode, FromRow, Row,
 };
 use ulid::Ulid;
+
+use crate::utils::{error::Error, middleware::Claims};
 
 #[derive(
     async_graphql::Enum,
@@ -192,8 +195,21 @@ impl User {
         &self.username
     }
 
-    async fn email(&self) -> &str {
-        &self.email
+    async fn email<'ctx>(&self, context: &Context<'ctx>) -> Result<&str, Error> {
+		// Only return email if user is admin
+		// or if user is the same as the user being queried
+		if let Some(user) = context.data_opt::<Claims>() {
+			println!("User:{:?}", user);
+			if user.access_level == AccessLevel::Admin || Ulid::from_string(&user.ulid).unwrap() == self.id {
+				return Ok(self.email.as_str());
+			} else {
+				// return Not authorized error
+				Err(Error::new("Not authorized", StatusCode::UNAUTHORIZED))
+			}
+		} else {
+			// return Not authorized error
+			Err(Error::new("Not authorized", StatusCode::UNAUTHORIZED))
+		}
     }
 
     async fn created_at(&self) -> &DateTime<Utc> {
@@ -220,4 +236,11 @@ impl From<AccessLevel> for Value {
             AccessLevel::User => "User".into(),
         }
     }
+}
+
+pub struct Options {
+	pub id: Option<String>,
+	pub email: Option<String>,
+	pub page: Option<i64>,
+	pub per_page: Option<i64>,
 }

@@ -6,9 +6,9 @@ use crate::{
         artist::Artist,
         song::{NewSong, Song},
         user::{Login, Register, User},
-        Name,
+        Name, refresh_token::{RefreshTokenInput, RefreshedToken},
     },
-    utils::error::Error,
+    utils::{error::Error, middleware::Claims},
 };
 use async_graphql::{http::graphiql_source, Context, EmptySubscription, Object, Schema};
 use hyper::{Body, Request, Response};
@@ -27,7 +27,11 @@ pub async fn graphql(req: Request<Body>) -> Result<Response<Body>, io::Error> {
         .unwrap()
         .clone();
     let db = req.data::<PgPool>().unwrap().clone();
-    let request = deserialize_body(req.into_body()).await?;
+    let claims = req.context::<Claims>();
+    let mut request = deserialize_body(req.into_body()).await?;
+    if claims.is_some() {
+        request = request.data(claims.unwrap());
+    }
     let response = schema.execute(request.data(db)).await;
 
     Ok(Response::new(Body::from(
@@ -145,6 +149,32 @@ impl QueryRoot {
 
         Ok(Page { page_info })
     }
+
+    async fn user<'ctx>(
+        &self,
+        context: &Context<'ctx>,
+        id: Option<String>,
+        email: Option<String>,
+    ) -> Result<User, Error> {
+        // Ok(User)
+        let db = context.data_unchecked::<PgPool>();
+        let mut options = crate::models::user::Options {
+            id: None,
+            email: None,
+            page: None,
+            per_page: None,
+        };
+
+        if let Some(id) = id {
+            options.id = Some(id);
+        }
+
+        if let Some(email) = email {
+            options.email = Some(email);
+        }
+
+        Ok(crate::database::user::get_user(&options, db).await.unwrap())
+    }
 }
 
 pub struct MutationRoot;
@@ -200,6 +230,15 @@ impl MutationRoot {
             Ok(user) => Ok(user),
             Err(err) => Err(async_graphql::Error::new(err.to_string())),
         }
+    }
+
+    async fn refresh_token(&self, context: &Context<'_>, input: RefreshTokenInput) -> Result<RefreshedToken, Error> {
+        let db = context.data_unchecked::<PgPool>();
+        let refresh_token = input.token;
+
+        Ok(crate::database::user::refresh_token(refresh_token, db)
+            .await
+            .unwrap())
     }
 }
 
