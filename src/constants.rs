@@ -29,4 +29,4 @@ pub const ADMIN_DEFAULT_PASSWORD: &str = "admin";
 // Database default values
 pub static DB_DEFAULT_CONNECT_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(5);
 pub static DB_DEFAULT_MAX_CONNECTIONS: u32 = 10;
-pub static DB_DEFAULT_URL: &str = "postgres://weeb:password1@localhost:5432/weeb_prod";
+pub static DB_DEFAULT_URL: &str = "postgres://weeb:password1@localhost:5432/weeb";
