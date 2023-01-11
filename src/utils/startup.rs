@@ -3,14 +3,12 @@ use hyper::{server::conn::AddrIncoming, Body, Server};
 use routerify::{Middleware, Router, RouterService};
 use sqlx::{postgres::PgPoolOptions, Row};
 use std::{io, net::{SocketAddr, Ipv4Addr, IpAddr}, sync::Arc, str::FromStr};
-use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
 
 pub type ServerStart = Server<AddrIncoming, RouterService<Body, io::Error>>;
 
 pub async fn up(conf: super::config::Config) -> (ServerStart, SocketAddr) {
-    let subscriber = FmtSubscriber::builder()
-        .with_max_level(Level::TRACE)
+    let subscriber = FmtSubscriber::builder()    
         .finish();
     tracing::subscriber::set_global_default(subscriber).unwrap();
 

@@ -8,7 +8,7 @@ use jsonwebtoken::{decode, Validation};
 use routerify::{ext::RequestExt, RouteError};
 use serde::{Deserialize, Serialize};
 use std::io;
-use tracing::{error, info};
+use tracing::{error, debug};
 
 pub async fn setup_headers(mut req: Response<Body>) -> Result<Response<Body>, io::Error> {
     let headers = req.headers_mut();
@@ -27,7 +27,7 @@ pub async fn setup_headers(mut req: Response<Body>) -> Result<Response<Body>, io
 }
 
 pub async fn logger(req: Request<Body>) -> Result<Request<Body>, io::Error> {
-    info!(
+    debug!(
         "{} {} {}",
         req.remote_addr(),
         req.method(),
