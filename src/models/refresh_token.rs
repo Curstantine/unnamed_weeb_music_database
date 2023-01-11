@@ -7,7 +7,7 @@ use sqlx::{
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RefreshToken {
-    pub id: i64,
+    pub id: i32,
     pub user_id: String,
     pub token: String,
     pub expires_at: DateTime<Utc>,
@@ -18,7 +18,7 @@ pub struct RefreshToken {
 
 impl<'r> FromRow<'r, PgRow> for RefreshToken {
     fn from_row(row: &'r PgRow) -> Result<Self, sqlx::Error> {
-        let id: i64 = row.try_get("id")?;
+        let id: i32 = row.try_get("id")?;
         let user_id: String = row.try_get("user_id")?;
         let token: String = row.try_get("token")?;
         let expires_at: DateTime<Utc> = row.try_get("expires_at")?;

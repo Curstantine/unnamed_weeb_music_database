@@ -2,7 +2,7 @@ use crate::{controllers, models::user::AccessLevel, utils::middleware};
 use hyper::{server::conn::AddrIncoming, Body, Server};
 use routerify::{Middleware, Router, RouterService};
 use sqlx::{postgres::PgPoolOptions, Row};
-use std::{io, net::SocketAddr, sync::Arc};
+use std::{io, net::{SocketAddr, Ipv4Addr, IpAddr}, sync::Arc, str::FromStr};
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
 
@@ -16,7 +16,7 @@ pub async fn up(conf: super::config::Config) -> (ServerStart, SocketAddr) {
 
     let pool = PgPoolOptions::new()
         .max_connections(conf.db.max_connections)
-        .acquire_timeout(conf.db.connect_timeout)
+        .acquire_timeout(std::time::Duration::from_secs(conf.db.connect_timeout))
         .connect(&conf.db.url)
         .await
         .unwrap();
@@ -71,7 +71,8 @@ pub async fn up(conf: super::config::Config) -> (ServerStart, SocketAddr) {
         .unwrap();
 
     let service = RouterService::new(router).unwrap();
-    let addr = SocketAddr::new(conf.ip, conf.port);
+    let ip = IpAddr::V4(Ipv4Addr::from_str(&conf.ip.to_string()).unwrap());
+    let addr = SocketAddr::new(ip, conf.port);
     let server = Server::bind(&addr).serve(service);
 
     (server, addr)
