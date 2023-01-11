@@ -1,7 +1,7 @@
 use crate::{
     constants::AUTH_DEFAULT_ACCESS_LEVEL,
     controllers::page::{Page, PageInfo},
-    database::user::LoginToken,
+    database::user::LoginResponse,
     models::{
         artist::Artist,
         song::{NewSong, Song},
@@ -201,7 +201,7 @@ impl MutationRoot {
         //todo!()
     }
 
-    async fn login<'a>(&self, context: &Context<'a>, input: Login) -> Result<LoginToken, Error> {
+    async fn login<'a>(&self, context: &Context<'a>, input: Login) -> Result<LoginResponse, Error> {
         let db = context.data_unchecked::<PgPool>();
         let password = input.password;
         let email = input.email;

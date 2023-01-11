@@ -12,10 +12,11 @@ use crate::{
     utils::{config::get_config, error::Error},
 };
 
-#[derive(Debug, Clone, async_graphql::SimpleObject)]
-pub struct LoginToken {
+#[derive(Debug, async_graphql::SimpleObject)]
+pub struct LoginResponse {
     pub token: String,
     pub refresh_token: String,
+    pub user: User,
 }
 
 pub async fn login(
@@ -23,7 +24,7 @@ pub async fn login(
     username: Option<String>,
     password: String,
     db: &PgPool,
-) -> Result<LoginToken, Error> {
+) -> Result<LoginResponse, Error> {
     let mut q = Query::select();
     q.expr(Expr::asterisk());
     q.from(UserIden::Table);
@@ -41,8 +42,6 @@ pub async fn login(
         .await
         .unwrap();
 
-    println!("Fetched user from database: {:?}", user.id);
-
     match bcrypt::verify(&password, &user.password_hash) {
         Ok(result) => result,
         Err(_) => return Err(Error::new("UNAUTHORIZED", hyper::StatusCode::UNAUTHORIZED)),
@@ -51,9 +50,10 @@ pub async fn login(
     let token = create_token(user.clone())?;
     let refresh_token = create_refresh_token(user.id, db).await?;
 
-    Ok(LoginToken {
+    Ok(LoginResponse {
         token,
         refresh_token,
+        user,
     })
 }
 
@@ -180,88 +180,93 @@ pub async fn create_user(
 }
 
 pub async fn get_user(options: &crate::models::user::Options, db: &PgPool) -> Result<User, Error> {
-	let mut q = Query::select();
-	q.expr(Expr::asterisk());
-	q.from(UserIden::Table);
-	if options.id.is_some() {
-		q.and_where(Expr::col(UserIden::Id).eq(options.id.as_ref().unwrap().to_string()));
-	} else if options.email.is_some() {
-		q.and_where(Expr::col(UserIden::Email).eq(options.email.as_ref().unwrap().clone()));
-	}
-	let (query, values) = q.build(PostgresQueryBuilder);
+    let mut q = Query::select();
+    q.expr(Expr::asterisk());
+    q.from(UserIden::Table);
+    if options.id.is_some() {
+        q.and_where(Expr::col(UserIden::Id).eq(options.id.as_ref().unwrap().to_string()));
+    } else if options.email.is_some() {
+        q.and_where(Expr::col(UserIden::Email).eq(options.email.as_ref().unwrap().clone()));
+    }
+    let (query, values) = q.build(PostgresQueryBuilder);
 
-	let user: Option<User> = bind_query_as(sqlx::query_as(&query), &values)
-		.fetch_optional(db)
-		.await
-		.unwrap();
+    let user: Option<User> = bind_query_as(sqlx::query_as(&query), &values)
+        .fetch_optional(db)
+        .await
+        .unwrap();
 
-	if user.is_none() {
-		return Err(Error::new("USER_NOT_FOUND", hyper::StatusCode::NOT_FOUND));
-	}
+    if user.is_none() {
+        return Err(Error::new("USER_NOT_FOUND", hyper::StatusCode::NOT_FOUND));
+    }
 
-	Ok(user.unwrap())
+    Ok(user.unwrap())
 }
 
-pub async fn refresh_token(
-	refresh_token: String,
-	db: &PgPool,
-) -> Result<RefreshedToken, Error> {
-	let (query, values) = Query::select()
-		.expr(Expr::asterisk())
-		.from(RefreshTokenIden::Table)
-		.and_where(Expr::col(RefreshTokenIden::Token).eq(refresh_token.clone()))
-		.to_owned()
-		.build(PostgresQueryBuilder);
+pub async fn refresh_token(refresh_token: String, db: &PgPool) -> Result<RefreshedToken, Error> {
+    let (query, values) = Query::select()
+        .expr(Expr::asterisk())
+        .from(RefreshTokenIden::Table)
+        .and_where(Expr::col(RefreshTokenIden::Token).eq(refresh_token.clone()))
+        .to_owned()
+        .build(PostgresQueryBuilder);
 
-	let refresh_token: Option<RefreshToken> = bind_query_as(sqlx::query_as(&query), &values)
-		.fetch_optional(db)
-		.await
-		.unwrap();
+    let refresh_token: Option<RefreshToken> = bind_query_as(sqlx::query_as(&query), &values)
+        .fetch_optional(db)
+        .await
+        .unwrap();
 
-	if refresh_token.is_none() {
-		return Err(Error::new(
-			"REFRESH_TOKEN_NOT_FOUND",
-			hyper::StatusCode::NOT_FOUND,
-		));
-	}
+    if refresh_token.is_none() {
+        return Err(Error::new(
+            "REFRESH_TOKEN_NOT_FOUND",
+            hyper::StatusCode::NOT_FOUND,
+        ));
+    }
 
-	let refresh_token = refresh_token.unwrap();
+    let refresh_token = refresh_token.unwrap();
 
-	if refresh_token.expires_at < chrono::Utc::now() {
-		return Err(Error::new(
-			"REFRESH_TOKEN_EXPIRED",
-			hyper::StatusCode::UNAUTHORIZED,
-		));
-	}
+    if refresh_token.expires_at < chrono::Utc::now() {
+        return Err(Error::new(
+            "REFRESH_TOKEN_EXPIRED",
+            hyper::StatusCode::UNAUTHORIZED,
+        ));
+    }
 
-	// Update the refresh token
-	let (query, values) = Query::update()
-		.table(RefreshTokenIden::Table)
-		.value(RefreshTokenIden::ExpiresAt, (chrono::Utc::now() + chrono::Duration::seconds(AUTH_DEFAULT_REFRESH_TOKEN_EXPIRATION as i64)).into())
+    // Update the refresh token
+    let (query, values) = Query::update()
+        .table(RefreshTokenIden::Table)
+        .value(
+            RefreshTokenIden::ExpiresAt,
+            (chrono::Utc::now()
+                + chrono::Duration::seconds(AUTH_DEFAULT_REFRESH_TOKEN_EXPIRATION as i64))
+            .into(),
+        )
         .value(RefreshTokenIden::UpdatedAt, chrono::Utc::now().into())
-		.and_where(Expr::col(RefreshTokenIden::Token).eq(refresh_token.token.clone()))
-		.to_owned()
-		.build(PostgresQueryBuilder);
+        .and_where(Expr::col(RefreshTokenIden::Token).eq(refresh_token.token.clone()))
+        .to_owned()
+        .build(PostgresQueryBuilder);
 
-	let _refresh_token: Option<RefreshToken> = bind_query_as(sqlx::query_as(&query), &values)
-		.fetch_optional(db)
-		.await
-		.unwrap();
+    let _refresh_token: Option<RefreshToken> = bind_query_as(sqlx::query_as(&query), &values)
+        .fetch_optional(db)
+        .await
+        .unwrap();
 
-    let user = get_user(&crate::models::user::Options {
-        id: Some(refresh_token.user_id),
-        email: None,
-        page: None,
-        per_page: None,
-    }, db).await.unwrap();
+    let user = get_user(
+        &crate::models::user::Options {
+            id: Some(refresh_token.user_id),
+            email: None,
+            page: None,
+            per_page: None,
+        },
+        db,
+    )
+    .await
+    .unwrap();
 
-	// Create a new jwt token'
-	let jwt_token = create_token(user).unwrap();
+    // Create a new jwt token'
+    let jwt_token = create_token(user).unwrap();
 
     // construct RefreshedToken
-    let token = RefreshedToken {
-        token: jwt_token,
-    };
-    
-	Ok(token)
+    let token = RefreshedToken { token: jwt_token };
+
+    Ok(token)
 }
