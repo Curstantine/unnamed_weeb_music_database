@@ -238,6 +238,7 @@ pub async fn refresh_token(
 	let (query, values) = Query::update()
 		.table(RefreshTokenIden::Table)
 		.value(RefreshTokenIden::ExpiresAt, (chrono::Utc::now() + chrono::Duration::seconds(AUTH_DEFAULT_REFRESH_TOKEN_EXPIRATION as i64)).into())
+        .value(RefreshTokenIden::UpdatedAt, chrono::Utc::now().into())
 		.and_where(Expr::col(RefreshTokenIden::Token).eq(refresh_token.token.clone()))
 		.to_owned()
 		.build(PostgresQueryBuilder);
