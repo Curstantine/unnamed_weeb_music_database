@@ -8,7 +8,7 @@ use jsonwebtoken::{decode, Validation};
 use routerify::{ext::RequestExt, RouteError};
 use serde::{Deserialize, Serialize};
 use std::io;
-use tracing::{error, debug};
+use tracing::{error};
 
 pub async fn setup_headers(mut req: Response<Body>) -> Result<Response<Body>, io::Error> {
     let headers = req.headers_mut();
