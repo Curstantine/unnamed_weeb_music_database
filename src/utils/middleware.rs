@@ -27,7 +27,7 @@ pub async fn setup_headers(mut req: Response<Body>) -> Result<Response<Body>, io
 }
 
 pub async fn logger(req: Request<Body>) -> Result<Request<Body>, io::Error> {
-    debug!(
+    info!(
         "{} {} {}",
         req.remote_addr(),
         req.method(),
