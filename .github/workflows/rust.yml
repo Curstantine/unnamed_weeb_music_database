@@ -6,11 +6,13 @@ on:
     paths: 
       - "Cargo.toml"
       - "src/**"
+      - ".github/workflows/rust.yml"
   pull_request:
     branches: [ "master" ]
     paths: 
       - "Cargo.toml"
       - "src/**"
+      - ".github/workflows/rust.yml"
   
 env:
   CARGO_TERM_COLOR: always
