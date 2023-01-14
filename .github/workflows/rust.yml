@@ -3,21 +3,38 @@ name: Rust
 on:
   push:
     branches: [ "master" ]
+    paths: 
+      - "Cargo.toml"
+      - "src/**"
   pull_request:
     branches: [ "master" ]
-
+    paths: 
+      - "Cargo.toml"
+      - "src/**"
+  
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-backend:
+  build:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Build with rust
       uses: actions-rs/cargo@v1.0.1
       with:
         command: build
         args: --manifest-path Cargo.toml
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - run: rustup component add clippy
+      - uses: actions-rs/clippy-check@v1.0.7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features
