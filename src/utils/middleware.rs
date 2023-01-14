@@ -1,5 +1,8 @@
 use super::error::{Error, ErrorResponse};
-use crate::{constants, models::user::AccessLevel};
+use crate::{
+    constants::{self, ALLOWED_CONTROL_HEADERS, ALLOWED_CONTROL_HOSTS, ALLOWED_CONTROL_METHODS},
+    models::user::AccessLevel,
+};
 use hyper::{
     header::{self, HeaderValue},
     Body, Request, Response,
@@ -15,7 +18,17 @@ pub async fn setup_headers(mut req: Response<Body>) -> Result<Response<Body>, io
 
     headers.insert(
         header::ACCESS_CONTROL_ALLOW_ORIGIN,
-        constants::ALLOWED_CONTROL_HOSTS.clone(),
+        HeaderValue::from_static(ALLOWED_CONTROL_HOSTS),
+    );
+
+    headers.insert(
+        header::ACCESS_CONTROL_ALLOW_HEADERS,
+        HeaderValue::from_static(ALLOWED_CONTROL_HEADERS),
+    );
+
+    headers.insert(
+        header::ACCESS_CONTROL_ALLOW_METHODS,
+        HeaderValue::from_static(ALLOWED_CONTROL_METHODS),
     );
 
     headers.insert(

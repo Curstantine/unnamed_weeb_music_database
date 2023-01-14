@@ -1,5 +1,3 @@
-use hyper::header::HeaderValue;
-
 use crate::models::user::AccessLevel;
 
 // Environment Variables
@@ -11,7 +9,9 @@ pub const CONFIG_DEFAULT_PATH: &str = "./config.toml";
 
 pub const SERVER_DEFAULT_PORT: u16 = 6001;
 pub const SERVER_DEFAULT_IP: &str = "0.0.0.0";
-pub static ALLOWED_CONTROL_HOSTS: HeaderValue = HeaderValue::from_static("*");
+pub const ALLOWED_CONTROL_HOSTS: &str = "*";
+pub const ALLOWED_CONTROL_HEADERS: &str = "Content-Type, Authorization";
+pub const ALLOWED_CONTROL_METHODS: &str = "GET, POST";
 
 // JWT
 pub const JWT_DEFAULT_EXPIRATION: usize = 3600;
