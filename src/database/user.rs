@@ -1,5 +1,6 @@
 use sea_query::{Alias, Expr, Func, PostgresQueryBuilder, Query};
 use sqlx::PgPool;
+use tracing::debug;
 use ulid::Ulid;
 
 use crate::{
@@ -39,8 +40,7 @@ pub async fn login(
 
     let user: User = bind_query_as(sqlx::query_as(&query), &values)
         .fetch_one(db)
-        .await
-        .unwrap();
+        .await?;
 
     match bcrypt::verify(&password, &user.password_hash) {
         Ok(result) => result,
@@ -76,9 +76,8 @@ fn create_token(user: User) -> Result<String, Error> {
     let token = jsonwebtoken::encode(
         &jsonwebtoken::Header::default(),
         &login_claim,
-        &jsonwebtoken::EncodingKey::from_base64_secret(&conf.auth_key).unwrap(),
-    )
-    .unwrap();
+        &jsonwebtoken::EncodingKey::from_base64_secret(&conf.auth_key)?,
+    )?;
 
     Ok(token)
 }
@@ -107,8 +106,7 @@ async fn create_refresh_token(user_id: Ulid, db: &PgPool) -> Result<String, Erro
 
     let _refresh_token: Option<RefreshToken> = bind_query_as(sqlx::query_as(&query), &values)
         .fetch_optional(db)
-        .await
-        .unwrap();
+        .await?;
 
     Ok(token)
 }
@@ -129,12 +127,11 @@ pub async fn create_user(
         .to_owned()
         .build(PostgresQueryBuilder);
 
-    println!("Query: {}", query);
+    debug!("Query: {}", query);
 
     let user: Option<User> = bind_query_as(sqlx::query_as(&query), &values)
         .fetch_optional(db)
-        .await
-        .unwrap();
+        .await?;
 
     if user.is_some() {
         return Err(Error::new(
@@ -169,12 +166,11 @@ pub async fn create_user(
         .to_owned()
         .build(PostgresQueryBuilder);
 
-    println!("Query: {}", query);
+    debug!("Query: {}", query);
 
     let user: User = bind_query_as(sqlx::query_as(&query), &values)
         .fetch_one(db)
-        .await
-        .unwrap();
+        .await?;
 
     Ok(user)
 }
@@ -212,8 +208,7 @@ pub async fn refresh_token(refresh_token: String, db: &PgPool) -> Result<Refresh
 
     let refresh_token: Option<RefreshToken> = bind_query_as(sqlx::query_as(&query), &values)
         .fetch_optional(db)
-        .await
-        .unwrap();
+        .await?;
 
     if refresh_token.is_none() {
         return Err(Error::new(
@@ -247,8 +242,7 @@ pub async fn refresh_token(refresh_token: String, db: &PgPool) -> Result<Refresh
 
     let _refresh_token: Option<RefreshToken> = bind_query_as(sqlx::query_as(&query), &values)
         .fetch_optional(db)
-        .await
-        .unwrap();
+        .await?;
 
     let user = get_user(
         &crate::models::user::Options {
@@ -259,11 +253,10 @@ pub async fn refresh_token(refresh_token: String, db: &PgPool) -> Result<Refresh
         },
         db,
     )
-    .await
-    .unwrap();
+    .await?;
 
     // Create a new jwt token'
-    let jwt_token = create_token(user).unwrap();
+    let jwt_token = create_token(user)?;
 
     // construct RefreshedToken
     let token = RefreshedToken { token: jwt_token };

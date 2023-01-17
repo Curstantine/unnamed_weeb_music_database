@@ -1,6 +1,7 @@
 use crate::constants;
 use core::panic;
 use serde::{Deserialize, Serialize};
+use tracing::info;
 use std::fs;
 
 pub fn get_config() -> Config {
@@ -19,8 +20,8 @@ pub fn get_config() -> Config {
     if let Ok(config) = confy::load_path::<Config>(path) {
         config
     } else {
-        println!("Failed to load the config file, falling back to default values.");
-        let conf =  Config::default();
+        info!("Failed to load the config file, falling back to default values.");
+        let conf = Config::default();
         confy::store_path(constants::CONFIG_DEFAULT_PATH, &conf).unwrap();
         conf
     }

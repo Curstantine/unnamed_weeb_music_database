@@ -1,6 +1,8 @@
+use super::tag::Tag;
 use super::{ExternalSite, Name};
-use async_graphql::{Enum, Object};
+use async_graphql::{Context, Enum, Object};
 use sqlx::types::chrono::NaiveDate;
+use sqlx::PgPool;
 use sqlx::{postgres::PgRow, Decode, FromRow, Row};
 use ulid::Ulid;
 
@@ -174,6 +176,12 @@ impl Release {
 
     async fn script_language(&self) -> Option<&Vec<String>> {
         self.script_language.as_ref()
+    }
+
+    async fn tags<'ctx>(&self, context: &Context<'ctx>) -> Vec<Tag> {
+        let db = context.data_unchecked::<PgPool>();
+        let options = crate::models::tag::Options::new().release_id(self.id);
+        crate::database::tag::get_tags(&options, db).await.unwrap()
     }
 }
 

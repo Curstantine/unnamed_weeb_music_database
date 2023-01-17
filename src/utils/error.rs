@@ -61,6 +61,38 @@ impl From<io::Error> for Error {
     }
 }
 
+impl From<sqlx::Error> for Error {
+    fn from(error: sqlx::Error) -> Self {
+        match error {
+            sqlx::Error::RowNotFound => Self::new(
+                "Could not find the requested resource!",
+                StatusCode::NOT_FOUND,
+            ),
+            _ => Self::new(
+                "Could not finish the request due to an error!",
+                StatusCode::INTERNAL_SERVER_ERROR,
+            ),
+        }
+    }
+}
+
+impl From<jsonwebtoken::errors::Error> for Error {
+    fn from(error: jsonwebtoken::errors::Error) -> Self {
+        match error.into_kind() {
+            jsonwebtoken::errors::ErrorKind::ExpiredSignature => {
+                Self::new("The token has expired!", StatusCode::UNAUTHORIZED)
+            }
+            jsonwebtoken::errors::ErrorKind::InvalidToken => {
+                Self::new("The token is invalid!", StatusCode::UNAUTHORIZED)
+            }
+            _ => Self::new(
+                "Could not finish the request due to an error!",
+                StatusCode::INTERNAL_SERVER_ERROR,
+            ),
+        }
+    }
+}
+
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(

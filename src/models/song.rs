@@ -1,4 +1,4 @@
-use super::{artist::Artist, release::Release, ExternalSite, Name, NewName};
+use super::{artist::Artist, release::Release, tag::Tag, ExternalSite, Name, NewName};
 use async_graphql::{Context, InputObject, Object};
 use sea_query::Iden;
 use sqlx::{postgres::PgRow, types::chrono::NaiveDate, FromRow, PgPool, Row};
@@ -64,6 +64,12 @@ impl Song {
         crate::database::release::get_releases_by_song_id(&self.id, db)
             .await
             .unwrap()
+    }
+
+    async fn tags<'ctx>(&self, context: &Context<'ctx>) -> Vec<Tag> {
+        let db = context.data_unchecked::<PgPool>();
+        let options = crate::models::tag::Options::new().song_id(self.id);
+        crate::database::tag::get_tags(&options, db).await.unwrap()
     }
 
     async fn external_sites(&self) -> Option<&Vec<ExternalSite>> {
