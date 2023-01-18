@@ -2,6 +2,7 @@ pub mod artist;
 pub mod refresh_token;
 pub mod release;
 pub mod song;
+pub mod tag;
 pub mod user;
 
 pub mod external_links;

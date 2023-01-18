@@ -4,9 +4,10 @@ use crate::{
     database::user::LoginResponse,
     models::{
         artist::Artist,
+        refresh_token::{RefreshTokenInput, RefreshedToken},
         song::{NewSong, Song},
         user::{Login, Register, User},
-        Name, refresh_token::{RefreshTokenInput, RefreshedToken},
+        Name,
     },
     utils::{error::Error, middleware::Claims},
 };
@@ -84,7 +85,7 @@ impl QueryRoot {
             options.genres = Some(genres);
         }
 
-        Ok(crate::database::song::get_song(&options, db).await.unwrap())
+        crate::database::song::get_song(&options, db).await
     }
 
     async fn artist<'ctx>(
@@ -122,9 +123,7 @@ impl QueryRoot {
             options.release_id = Some(release_id);
         }
 
-        Ok(crate::database::artist::get_artist(&options, db)
-            .await
-            .unwrap())
+        crate::database::artist::get_artist(&options, db).await
     }
 
     async fn page<'ctx>(&self, page: Option<i32>, per_page: Option<i32>) -> Result<Page, Error> {
@@ -173,7 +172,7 @@ impl QueryRoot {
             options.email = Some(email);
         }
 
-        Ok(crate::database::user::get_user(&options, db).await.unwrap())
+        crate::database::user::get_user(&options, db).await
     }
 }
 
@@ -193,11 +192,7 @@ impl MutationRoot {
         let artists = input.artists;
         let releases = input.releases;
 
-        Ok(
-            crate::database::song::create_song(ulid, name, artists, Some(releases), db)
-                .await
-                .unwrap(),
-        )
+        crate::database::song::create_song(ulid, name, artists, Some(releases), db).await
         //todo!()
     }
 
@@ -207,38 +202,27 @@ impl MutationRoot {
         let email = input.email;
         let username = input.username;
 
-        Ok(crate::database::user::login(email, username, password, db)
-            .await
-            .unwrap())
+        crate::database::user::login(email, username, password, db).await
     }
 
-    async fn register<'a>(&self, context: &Context<'a>, input: Register) -> Result<User, async_graphql::Error> {
+    async fn register<'a>(&self, context: &Context<'a>, input: Register) -> Result<User, Error> {
         let db = context.data_unchecked::<PgPool>();
         let email = input.email;
         let password = input.password;
         let username = input.username;
 
-        match crate::database::user::create_user(
-            email,
-            username,
-            password,
-            AUTH_DEFAULT_ACCESS_LEVEL,
-            db,
-        )
-        .await
-        {
-            Ok(user) => Ok(user),
-            Err(err) => Err(async_graphql::Error::new(err.to_string())),
-        }
+        crate::database::user::create_user(email, username, password, AUTH_DEFAULT_ACCESS_LEVEL, db)
+            .await
     }
 
-    async fn refresh_token(&self, context: &Context<'_>, input: RefreshTokenInput) -> Result<RefreshedToken, Error> {
+    async fn refresh_token(
+        &self,
+        context: &Context<'_>,
+        input: RefreshTokenInput,
+    ) -> Result<RefreshedToken, Error> {
         let db = context.data_unchecked::<PgPool>();
         let refresh_token = input.token;
-
-        Ok(crate::database::user::refresh_token(refresh_token, db)
-            .await
-            .unwrap())
+        crate::database::user::refresh_token(refresh_token, db).await
     }
 }
 

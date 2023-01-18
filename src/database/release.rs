@@ -7,6 +7,7 @@ use crate::{
 };
 use sea_query::{Alias, Expr, PostgresQueryBuilder, Query};
 use sqlx::PgPool;
+use tracing::debug;
 use ulid::Ulid;
 
 use crate::sea_query_driver_postgres::bind_query_as;
@@ -47,8 +48,7 @@ pub async fn get_releases(_options: &Options, db: &PgPool) -> Result<Vec<Release
 
     let releases: Vec<Release> = bind_query_as(sqlx::query_as(&query), &values)
         .fetch_all(db)
-        .await
-        .unwrap();
+        .await?;
 
     Ok(releases)
 }
@@ -83,7 +83,7 @@ pub async fn get_releases_by_song_id(id: &Ulid, db: &PgPool) -> Result<Vec<Relea
         .group_by_col((ReleaseIden::Table, ReleaseIden::Id))
         .build(PostgresQueryBuilder);
 
-    println!("{}", query);
+    debug!("{}", query);
 
     let releases: Vec<Release> = bind_query_as(sqlx::query_as(&query), &values)
         .fetch_all(db)

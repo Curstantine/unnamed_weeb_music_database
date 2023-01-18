@@ -9,6 +9,7 @@ use crate::{
 };
 use sea_query::{Expr, JoinType, PostgresQueryBuilder, Query, Values};
 use sqlx::PgPool;
+use tracing::debug;
 
 use crate::sea_query_driver_postgres::bind_query_as;
 
@@ -23,12 +24,11 @@ use crate::sea_query_driver_postgres::bind_query_as;
 pub async fn get_song(options: &Options, db: &PgPool) -> Result<Song, Error> {
     let (query, values) = build_query(options);
 
-    println!("{}", query);
+    debug!("{}", query);
 
     let song: Song = bind_query_as(sqlx::query_as(&query), &values)
         .fetch_one(db)
-        .await
-        .unwrap();
+        .await?;
 
     Ok(song)
 }
@@ -44,12 +44,11 @@ pub async fn get_song(options: &Options, db: &PgPool) -> Result<Song, Error> {
 pub async fn get_songs(options: &Options, db: &PgPool) -> Result<Vec<Song>, Error> {
     let (query, values) = build_query(options);
 
-    println!("{}", query);
+    debug!("{}", query);
 
     let songs: Vec<Song> = bind_query_as(sqlx::query_as(&query), &values)
         .fetch_all(db)
-        .await
-        .unwrap();
+        .await?;
 
     Ok(songs)
 }
@@ -68,15 +67,14 @@ pub async fn create_song(
         .returning(Query::returning().columns([SongIden::Id, SongIden::Name]))
         .build(PostgresQueryBuilder);
 
-    println!("{}", query);
-    println!("{:?}", values);
+    debug!("Query: {}", query);
+    debug!("Values: {:?}", values);
 
     let song: Song = sqlx::query_as(&query)
         .bind(ulid.to_string())
         .bind(name)
         .fetch_one(db)
-        .await
-        .unwrap();
+        .await?;
 
     Ok(song)
 }

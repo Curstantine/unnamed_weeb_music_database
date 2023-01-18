@@ -8,6 +8,7 @@ use crate::{
 
 use sea_query::{Expr, JoinType, PostgresQueryBuilder, Query, Values};
 use sqlx::PgPool;
+use tracing::debug;
 use ulid::Ulid;
 
 use crate::sea_query_driver_postgres::bind_query_as;
@@ -33,7 +34,7 @@ pub async fn get_artists_by_song_id(id: &Ulid, db: &PgPool) -> Result<Vec<Artist
         .and_where(Expr::col(SongArtistIden::SongId).eq(id.to_string()))
         .build(PostgresQueryBuilder);
 
-    println!("{}", query);
+    debug!("{}", query);
 
     let artists: Vec<Artist> = bind_query_as(sqlx::query_as(&query), &values)
         .fetch_all(db)
@@ -50,7 +51,7 @@ pub async fn get_artists_by_song_id(id: &Ulid, db: &PgPool) -> Result<Vec<Artist
 pub async fn get_artist(options: &Options, db: &PgPool) -> Result<Artist, Error> {
     let (query, values) = build_query(options);
 
-    println!("{}", query);
+    debug!("{}", query);
 
     // execute the query
     let artist: Artist = bind_query_as(sqlx::query_as(&query), &values)
@@ -70,7 +71,7 @@ pub async fn get_artist(options: &Options, db: &PgPool) -> Result<Artist, Error>
 pub async fn get_artists(options: &Options, db: &PgPool) -> Result<Vec<Artist>, Error> {
     let (query, values) = build_query(options);
 
-    println!("{}", query);
+    debug!("{}", query);
 
     // execute the query
     let artists: Vec<Artist> = bind_query_as(sqlx::query_as(&query), &values)

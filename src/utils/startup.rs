@@ -2,14 +2,19 @@ use crate::{controllers, models::user::AccessLevel, utils::middleware};
 use hyper::{server::conn::AddrIncoming, Body, Server};
 use routerify::{Middleware, Router, RouterService};
 use sqlx::{postgres::PgPoolOptions, Row};
-use std::{io, net::{SocketAddr, Ipv4Addr, IpAddr}, sync::Arc, str::FromStr};
+use tracing::Level;
+use std::{
+    io,
+    net::{IpAddr, Ipv4Addr, SocketAddr},
+    str::FromStr,
+    sync::Arc, env,
+};
 use tracing_subscriber::FmtSubscriber;
 
 pub type ServerStart = Server<AddrIncoming, RouterService<Body, io::Error>>;
 
 pub async fn up(conf: super::config::Config) -> (ServerStart, SocketAddr) {
-    let subscriber = FmtSubscriber::builder()    
-        .finish();
+    let subscriber = FmtSubscriber::builder().with_max_level(get_trace_level()).finish();
     tracing::subscriber::set_global_default(subscriber).unwrap();
 
     let pool = PgPoolOptions::new()
@@ -74,4 +79,19 @@ pub async fn up(conf: super::config::Config) -> (ServerStart, SocketAddr) {
     let server = Server::bind(&addr).serve(service);
 
     (server, addr)
+}
+
+fn get_trace_level() -> Level {
+    // Get the value of the RUST_LOG environment variable
+    let level = env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string());
+
+    // Convert the string to lowercase and then match it
+    match level.to_lowercase().as_str() {
+        "trace" => Level::TRACE,
+        "debug" => Level::DEBUG,
+        "info" => Level::INFO,
+        "warn" => Level::WARN,
+        "error" => Level::ERROR,
+        _ => Level::INFO,
+    }
 }

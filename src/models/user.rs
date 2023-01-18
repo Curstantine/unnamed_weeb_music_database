@@ -1,4 +1,4 @@
-use async_graphql::{Object, Context};
+use async_graphql::{Context, Object};
 use hyper::StatusCode;
 use sea_query::Value;
 use serde::{ser::SerializeStruct, Deserialize, Serialize};
@@ -7,6 +7,7 @@ use sqlx::{
     types::chrono::{DateTime, Utc},
     Decode, FromRow, Row,
 };
+use tracing::debug;
 use ulid::Ulid;
 
 use crate::utils::{error::Error, middleware::Claims};
@@ -196,20 +197,22 @@ impl User {
     }
 
     async fn email<'ctx>(&self, context: &Context<'ctx>) -> Result<&str, Error> {
-		// Only return email if user is admin
-		// or if user is the same as the user being queried
-		if let Some(user) = context.data_opt::<Claims>() {
-			println!("User:{:?}", user);
-			if user.access_level == AccessLevel::Admin || Ulid::from_string(&user.ulid).unwrap() == self.id {
-				return Ok(self.email.as_str());
-			} else {
-				// return Not authorized error
-				Err(Error::new("Not authorized", StatusCode::UNAUTHORIZED))
-			}
-		} else {
-			// return Not authorized error
-			Err(Error::new("Not authorized", StatusCode::UNAUTHORIZED))
-		}
+        // Only return email if user is admin
+        // or if user is the same as the user being queried
+        if let Some(user) = context.data_opt::<Claims>() {
+            debug!("User:{:?}", user);
+            if user.access_level == AccessLevel::Admin
+                || Ulid::from_string(&user.ulid).unwrap() == self.id
+            {
+                return Ok(self.email.as_str());
+            } else {
+                // return Not authorized error
+                Err(Error::new("Not authorized", StatusCode::UNAUTHORIZED))
+            }
+        } else {
+            // return Not authorized error
+            Err(Error::new("Not authorized", StatusCode::UNAUTHORIZED))
+        }
     }
 
     async fn created_at(&self) -> &DateTime<Utc> {
@@ -239,8 +242,8 @@ impl From<AccessLevel> for Value {
 }
 
 pub struct Options {
-	pub id: Option<String>,
-	pub email: Option<String>,
-	pub page: Option<i64>,
-	pub per_page: Option<i64>,
+    pub id: Option<String>,
+    pub email: Option<String>,
+    pub page: Option<i64>,
+    pub per_page: Option<i64>,
 }

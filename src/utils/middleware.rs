@@ -79,9 +79,16 @@ pub async fn auth(req: Request<Body>) -> Result<Request<Body>, io::Error> {
                 .unwrap()
                 .replace("Bearer ", "");
 
+            // Check if the token is empty.
+            if token.is_empty() {
+                return Ok(req);
+            }
+
+            // Validate the token.
             let validation = Validation::default();
             let claims = decode::<Claims>(&token, &auth_key, &validation).unwrap();
 
+            // Set the claims in the request's context.
             req.set_context(claims.claims);
         }
         None => {
