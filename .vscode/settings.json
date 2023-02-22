@@ -14,6 +14,6 @@
     "Tēze",
     "timestamptz",
     "weeb",
-    "Zankoku"
-  ]
+  ],
+  "editor.formatOnSave": true,
 }
